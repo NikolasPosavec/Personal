@@ -1,1 +1,15 @@
-This is my fist website
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>My First Website</title>
+    </head>
+    <body>
+        <h1>
+        
+        This is my fist website and I'm <b> extremely excited!!!!</b>
+
+    </body>
+</html>
+
