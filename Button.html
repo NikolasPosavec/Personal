@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Counter with Rabbit Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #counter {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #cps {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        #rabbitStatus {
+            font-size: 20px;
+            font-weight: bold;
+            color: red;
+            margin-bottom: 20px;
+        }
+
+        #rabbitImage {
+            width: 200px;
+            height: auto;
+            display: none;
+            margin-bottom: 20px;
+        }
+        #turtleStatus {
+            font-size: 20px;
+            font-weight: bold;
+            color: red;
+            margin-bottom: 20px;
+        }
+
+        #turtleImage {
+            width: 200px;
+            height: auto;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        #incrementButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>CPS COUNTER</h1>
+    
+    <div id="counter">Counter: <span id="count">0</span></div>
+    <div id="cps">CPS: <span id="cpsValue">0</span></div>
+    <div id="rabbitStatus"></div>
+    <img id="rabbitImage" src="https://t4.ftcdn.net/jpg/02/65/44/89/360_F_265448993_7CYk6pnAdxpm19jfxXmPJQw34Ay0AYW7.jpg" alt="Rabbit Image">
+    <div id="turtleStatus"></div>
+    <img id="turtleImage" src="https://t3.ftcdn.net/jpg/00/15/27/80/360_F_15278087_eaWJ3iN16u4kyHccwYQc3uI7J70bQYIu.jpg" alt="Rabbit Image">
+
+    <button id="incrementButton" onclick="handleButtonClick()">Increment Counter</button>
+    <p>Click this button ten times to find out your clicks per second(CPS). Refresh the page to try again!</p>
+    <script>
+        let count = 0;
+        let startTime;
+        let endTime;
+
+        function handleButtonClick() {
+            count++;
+            document.getElementById('count').innerText = count;
+
+            if (count === 1) {
+                startTime = new Date();
+            }
+
+            if (count === 10) {
+                endTime = new Date();
+                const elapsedTime = (endTime - startTime) / 1000;
+                const cps = (count / elapsedTime).toFixed(2);
+                document.getElementById('cpsValue').innerText = cps;
+
+                if (cps >= 7) {
+                    document.getElementById('rabbitStatus').innerText = "Rabbit Status: You are as fast as a rabbit!";
+                    document.getElementById('rabbitImage').style.display = 'block';
+                } else {
+                    document.getElementById('turtleStatus').innerText = "Turtle Status: You are as slow as a turtle!";
+                    document.getElementById('turtleImage').style.display = 'block';
+                }
+
+                alert(`It took ${elapsedTime} seconds to perform 10 clicks. CPS: ${cps}`);
+            }
+        }
+    </script>
+</body>
+</html>
