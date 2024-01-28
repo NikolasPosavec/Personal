@@ -96,9 +96,9 @@
     <img id="turtleImage" src="https://t3.ftcdn.net/jpg/00/15/27/80/360_F_15278087_eaWJ3iN16u4kyHccwYQc3uI7J70bQYIu.jpg" alt="Rabbit Image">
 
     <button id="incrementButton" onclick="handleButtonClick()">Increment Counter</button>
-    <p>Click this button ten times to find out your clicks per second (CPS). Refresh the page to try again!</p>
-    <p>Refresh the page to start a new test!</p>
+    <p>Click this button ten times to find out your clicks per second (CPS).</p>
     <button id="refreshButton" onclick="refreshPage()">Refresh</button>
+
     <script>
         let count = 0;
         let startTime;
@@ -127,10 +127,11 @@
                 }
 
                 alert(`It took ${elapsedTime} seconds to perform 10 clicks. CPS: ${cps}`);
-                function refreshPage() {
-                location.reload();
-                }
             }
+        }
+
+        function refreshPage() {
+            location.reload();
         }
     </script>
 </body>
