@@ -3,5 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Words Per Minute Tester</title>
+    <title>Typing Speed Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+
+        #sentence {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        #inputBox {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        #startButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
+<body>
+    <h1>Typing Speed Test</h1>
+    
+    <div id="sentence"></div>
+    
+    <input type="text" id="inputBox" oninput="checkInput()" placeholder="Start typing...">
+    
+    <div id="result"></div>
+
+    <button id="startButton" onclick="startTest()">Start Test</button>
+
+    <script>
+        const sentences = [
+            "The quick brown fox jumps over the lazy dog.",
+            "A journey of a thousand miles begins with a single step.",
+            "To be or not to be, that is the question.",
+            "All that glitters is not gold.",
+            "Life is what happens when you're busy making other plans."
+        ];
+
+        let currentSentenceIndex;
+        let startTime;
+        let endTime;
+
+        function startTest() {
+            currentSentenceIndex = Math.floor(Math.random() * sentences.length);
+            const sentence = sentences[currentSentenceIndex];
+            document.getElementById('sentence').innerText = sentence;
+            document.getElementById('inputBox').value = "";
+            document.getElementById('result').innerText = "";
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('inputBox').removeAttribute("disabled");
+            document.getElementById('inputBox').focus();
+            startTime = new Date();
+        }
+
+        function checkInput() {
+            const input = document.getElementById('inputBox').value;
+            const originalSentence = sentences[currentSentenceIndex];
+
+            if (input === originalSentence) {
+                endTime = new Date();
+                const elapsedTime = (endTime - startTime) / 1000; // Convert to seconds
+                const words = originalSentence.split(' ').length;
+                const wpm = Math.round((words / elapsedTime) * 60); // Calculate WPM
+                document.getElementById('result').innerText = `Your WPM: ${wpm}`;
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('inputBox').setAttribute("disabled", "disabled");
+            }
+        }
+    </script>
+</body>
+</html>
