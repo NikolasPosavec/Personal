@@ -6,9 +6,19 @@
     <title>Typing Speed Test</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            margin: 50px;
+            margin: 0;
+            padding: 20px;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
         #sentence {
@@ -25,12 +35,31 @@
         #result {
             font-size: 20px;
             font-weight: bold;
+            margin-bottom: 20px;
         }
 
         #startButton {
-            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             font-size: 16px;
+            margin: 10px;
             cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #startButton:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -39,7 +68,7 @@
     
     <div id="sentence"></div>
     
-    <input type="text" id="inputBox" oninput="checkInput()" placeholder="Start typing...">
+    <input type="text" id="inputBox" oninput="checkInput()" placeholder="Start typing..." disabled>
     
     <div id="result"></div>
 

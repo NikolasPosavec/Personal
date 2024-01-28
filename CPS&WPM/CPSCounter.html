@@ -6,12 +6,22 @@
     <title>Clicks Per Second Tester</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
-            margin: 50px;
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
         #counter {
@@ -24,29 +34,14 @@
             margin-bottom: 20px;
         }
 
-        #rabbitStatus {
+        #rabbitStatus, #turtleStatus {
             font-size: 20px;
             font-weight: bold;
             color: red;
             margin-bottom: 20px;
         }
 
-        #rabbitImage {
-            width: 200px;
-            height: auto;
-            display: none;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-        #turtleStatus {
-            font-size: 20px;
-            font-weight: bold;
-            color: red;
-            margin-bottom: 20px;
-            align-items: center;
-        }
-
-        #turtleImage {
+        #rabbitImage, #turtleImage {
             width: 200px;
             height: auto;
             display: none;
@@ -54,9 +49,26 @@
         }
 
         #incrementButton {
-            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             font-size: 16px;
+            margin: 10px;
             cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #incrementButton:hover {
+            background-color: #2980b9;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -71,7 +83,8 @@
     <img id="turtleImage" src="https://t3.ftcdn.net/jpg/00/15/27/80/360_F_15278087_eaWJ3iN16u4kyHccwYQc3uI7J70bQYIu.jpg" alt="Rabbit Image">
 
     <button id="incrementButton" onclick="handleButtonClick()">Increment Counter</button>
-    <p>Click this button ten times to find out your clicks per second(CPS). Refresh the page to try again!</p>
+    <p>Click this button ten times to find out your clicks per second (CPS). Refresh the page to try again!</p>
+
     <script>
         let count = 0;
         let startTime;
