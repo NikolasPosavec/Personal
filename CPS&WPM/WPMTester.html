@@ -56,6 +56,19 @@
             background-color: #bdc3c7;
             cursor: not-allowed;
         }
+        #refreshButton {
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
 
         p {
             font-size: 16px;
@@ -74,6 +87,7 @@
 
     <button id="startButton" onclick="startTest()">Start Test</button>
     <p>Refresh the page to start a new test!</p>
+    <button id="refreshButton" onclick="refreshPage()">Refresh</button>
 
     <script>
         const sentences = [
@@ -112,6 +126,9 @@
                 document.getElementById('result').innerText = `Your WPM: ${wpm}`;
                 document.getElementById('startButton').disabled = false;
                 document.getElementById('inputBox').setAttribute("disabled", "disabled");
+                function refreshPage() {
+                location.reload();
+                }
             }
         }
     </script>
