@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clicks Per Second Tester</title>
+    <title>Clicks Per Second (CPS)</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -74,18 +74,18 @@
     </style>
 </head>
 <body>
-    <h1>CPS COUNTER</h1>
+    <h1>Clicks Per Second (CPS)</h1>
     
-    <div id="counter">Counter: <span id="count">0</span></div>
+    <div id="counter">Click Counter: <span id="count">0</span></div>
     <div id="cps">CPS: <span id="cpsValue">0</span></div>
     <div id="rabbitStatus"></div>
     <img id="rabbitImage" src="https://t4.ftcdn.net/jpg/02/65/44/89/360_F_265448993_7CYk6pnAdxpm19jfxXmPJQw34Ay0AYW7.jpg" alt="Rabbit Image">
     <div id="turtleStatus"></div>
     <img id="turtleImage" src="https://t3.ftcdn.net/jpg/00/15/27/80/360_F_15278087_eaWJ3iN16u4kyHccwYQc3uI7J70bQYIu.jpg" alt="Turtle Image">
 
-    <button id="incrementButton" onclick="handleButtonClick()">Increment Counter</button>
+    <button id="incrementButton" onclick="handleButtonClick()">Click Here</button>
     <p>Click this button ten times to find out your clicks per second (CPS).</p>
-    <button id="refreshButton" onclick="refreshPage()">Refresh</button>
+    <button id="refreshButton" onclick="refreshPage()">Restart</button>
     <button id="homeButton" onclick="goHome()">Back to Home</button>
 
     <script>
@@ -115,6 +115,7 @@
                     document.getElementById('turtleImage').style.display = 'block';
                 }
 
+                document.getElementById('incrementButton').style.display = 'none';
                 alert(`It took ${elapsedTime} seconds to perform 10 clicks. CPS: ${cps}`);
             }
         }
