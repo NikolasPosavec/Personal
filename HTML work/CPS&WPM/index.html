@@ -1,67 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Typing Speed Tests</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #000;
-      color: #fff;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Tests</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            color: #fff;
+        }
 
-    header {
-      background-color: #f00;
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-    }
+        h1 {
+            background-color: #f00;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
 
-    main {
-      margin: 20px;
-    }
+        main {
+            margin: 20px;
+        }
 
-    button {
-      background-color: #f00;
-      color: white;
-      border: none;
-      padding: 15px 30px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 10px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
+        .test-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+        }
 
-    button:hover {
-      background-color: #900;
-    }
+        .test {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    hr {
-      border: 1px solid #ccc;
-      margin: 20px 0;
-    }
-    
-  </style>
+        button {
+            background-color: #f00;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #900;
+        }
+
+        .test img {
+            width: 200px;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-  <header>
-    Typing Speed Tests
-  </header>
-  <main>
-    <a href="CPSCounter1.html">
-      <button>Clicks Per Second Test</button>
-    </a>
-    <a href="WPMTester1.html">
-      <button>Words Per Minute Test</button>
-    </a>
-    <hr>
-  </main>
+    <main>
+        <h1>Prove Your Speed: Click/Tap & Type Tests</h1>
+        <div class="test-container">
+            <div class="test">
+                <img src="https://th.bing.com/th/id/OIG4.jqvZtr7nqNrRkT9_bCnM?pid=ImgGn" alt="Clicks Per Second Test Image">
+                <a href="CPSCounter.html">
+                    <button>Clicks Per Second Test</button>
+                </a>
+            </div>
+            
+            <div class="test">
+                <img src="https://th.bing.com/th/id/OIG2.zwA59QrunvaWyJTWaEOK?w=270&h=270&c=6&r=0&o=5&pid=ImgGn" alt="Words Per Minute Test Image">
+                <a href="WPMTester.html">
+                    <button>Words Per Minute Test</button>
+                </a>
+            </div>
+        </div>
+    </main>
 </body>
 </html>
