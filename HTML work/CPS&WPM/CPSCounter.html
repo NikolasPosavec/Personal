@@ -22,7 +22,9 @@
             color: white;
             padding: 20px;
             font-size: 24px;
-            margin-bottom: 20px;
+            margin: 0; 
+            width: 100%; 
+            text-align: center; 
         }
 
         #counter {
@@ -74,17 +76,17 @@
     </style>
 </head>
 <body>
-    <h1>Clicks Per Second (CPS)</h1>
+    <h1>Clicks/Taps Per Second (CPS/TPS)</h1>
     
-    <div id="counter">Click Counter: <span id="count">0</span></div>
-    <div id="cps">CPS: <span id="cpsValue">0</span></div>
+    <div id="counter">Click/Tap Counter: <span id="count">0</span></div>
+    <div id="cps">CPS/TPS: <span id="cpsValue">0</span></div>
     <div id="rabbitStatus"></div>
     <img id="rabbitImage" src="https://t4.ftcdn.net/jpg/02/65/44/89/360_F_265448993_7CYk6pnAdxpm19jfxXmPJQw34Ay0AYW7.jpg" alt="Rabbit Image">
     <div id="turtleStatus"></div>
     <img id="turtleImage" src="https://t3.ftcdn.net/jpg/00/15/27/80/360_F_15278087_eaWJ3iN16u4kyHccwYQc3uI7J70bQYIu.jpg" alt="Turtle Image">
 
-    <button id="incrementButton" onclick="handleButtonClick()">Click Here</button>
-    <p>Click this button ten times to find out your clicks per second (CPS).</p>
+    <button id="incrementButton" onclick="handleButtonClick()">Click/Tap Here 10 Times</button>
+
     <button id="refreshButton" onclick="refreshPage()">Restart</button>
     <button id="homeButton" onclick="goHome()">Back to Home</button>
 
@@ -125,7 +127,7 @@
         }
 
         function goHome() {
-            window.location.href = 'index3.html';
+            window.location.href = 'index.html';
         }
         
     </script>
