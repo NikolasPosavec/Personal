@@ -1,0 +1,53 @@
+// ==UserScript==
+// @name         Number Sentences in AP Classroom (Final Fix)
+// @namespace    http://tampermonkey.net/
+// @version      1.5
+// @description  Fixes empty splits, decimals, and HTML issues
+// @author       Nikolas Posavec
+// @match        https://apclassroom.collegeboard.org/*
+// @grant        none
+// ==/UserScript==
+
+(function () {
+    'use strict';
+
+    const ABBREVIATIONS = ['U.S.', 'v.', 'e.g.', 'i.e.', 'Mr.', 'Engel v. Vitale', 'St.'];
+
+    function numberSentences() {
+        const paragraphs = document.querySelectorAll('p:not([data-numbered])');
+
+        paragraphs.forEach((paragraph) => {
+            let text = paragraph.textContent
+                .trim()
+                // Replace decimals like 733.03 to avoid splits
+                .replace(/(\d+)\.(\d+)/g, '$1DECIMAL_PLACEHOLDER$2');
+
+            // Replace abbreviations with placeholders
+            ABBREVIATIONS.forEach((abbr, index) => {
+                const escapedAbbr = abbr.replace(/\./g, '\\.');
+                text = text.replace(new RegExp(escapedAbbr, 'g'), `ABBR_PLACEHOLDER_${index}`);
+            });
+
+            // Split sentences, ignoring empty/whitespace splits
+            const sentences = text.split(/(?<=[.!?])\s+(?=[A-Z])/g) // Split only if followed by uppercase (sentence start)
+                .filter(s => s.trim().length > 1); // Ignore single-character splits
+
+            if (sentences.length > 0) {
+                let numberedSentences = sentences.map((sentence, index) => {
+                    // Restore abbreviations and decimals
+                    let restored = sentence
+                        .replace(/ABBR_PLACEHOLDER_(\d+)/g, (m, id) => ABBREVIATIONS[id])
+                        .replace(/(\d+)DECIMAL_PLACEHOLDER(\d+)/g, '$1.$2');
+                    return `<span style="font-weight: bold; color: blue;">(${index + 1})</span> ${restored}`;
+                });
+
+                paragraph.innerHTML = numberedSentences.join(' ');
+                paragraph.dataset.numbered = "true";
+            }
+        });
+    }
+
+    const observer = new MutationObserver(numberSentences);
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('load', numberSentences);
+})();
