@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Speed Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #000;
+            color: #fff;
+        }
+
+        h1 {
+            background-color: #f00;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #sentence {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        #inputBox {
+            padding: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #000;
+            background-color: #fff;
+        }
+
+        #result {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #startButton, #refreshButton, #homeButton {
+            background-color: #f00;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #startButton:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        #startButton:hover, #refreshButton:hover, #homeButton:hover {
+            background-color: #900;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        #refreshButton {
+            display: none; 
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Typing Speed Test</h1>
+    
+    <div id="sentence"></div>
+    
+    <input type="text" id="inputBox" oninput="checkInput()" disabled>
+    
+    <div id="result"></div>
+
+    <button id="startButton" onclick="startTest()">Start Test</button>
+    
+    <button id="refreshButton" onclick="refreshPage()">Restart</button>
+    <button id="homeButton" onclick="goHome()">Back to Home</button>
+
+    <script>
+        const sentences = [
+            "The quick brown fox jumps over the lazy dog.",
+            "A journey of a thousand miles begins with a single step.",
+            "To be or not to be, that is the question.",
+            "All that glitters is not gold.",
+            "Life is what happens when you're busy making other plans."
+        ];
+
+        let currentSentenceIndex;
+        let startTime;
+        let endTime;
+
+        function startTest() {
+            currentSentenceIndex = Math.floor(Math.random() * sentences.length);
+            const sentence = sentences[currentSentenceIndex];
+            document.getElementById('sentence').innerText = sentence;
+            document.getElementById('inputBox').value = "";
+            document.getElementById('result').innerText = "";
+            document.getElementById('startButton').disabled = true;
+            document.getElementById('inputBox').removeAttribute("disabled");
+            document.getElementById('inputBox').setAttribute("placeholder", "Start typing the text above...");
+            document.getElementById('inputBox').focus();
+            startTime = new Date();
+        }
+
+        function checkInput() {
+            const input = document.getElementById('inputBox').value;
+            const originalSentence = sentences[currentSentenceIndex];
+
+            if (input === originalSentence) {
+                endTime = new Date();
+                const elapsedTime = (endTime - startTime) / 1000; // Convert to seconds
+                const words = originalSentence.split(' ').length;
+                const wpm = Math.round((words / elapsedTime) * 60); // Calculate WPM
+                document.getElementById('result').innerText = `Your WPM: ${wpm}`;
+                document.getElementById('startButton').disabled = false;
+                document.getElementById('inputBox').setAttribute("disabled", "disabled");
+                document.getElementById('refreshButton').style.display = "inline-block"; // Show the restart button
+            }
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+        
+    </script>
+</body>
+</html>

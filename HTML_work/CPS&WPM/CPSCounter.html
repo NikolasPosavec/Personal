@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clicks Per Second (CPS)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #000;
+            color: #fff;
+        }
+
+        h1 {
+            background-color: #f00;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            margin: 0; 
+            width: 100%; 
+            text-align: center; 
+        }
+
+        #counter {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #cps {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        #rabbitStatus, #turtleStatus {
+            font-size: 20px;
+            font-weight: bold;
+            color: red;
+            margin-bottom: 20px;
+        }
+
+        #rabbitImage, #turtleImage {
+            width: 200px;
+            height: auto;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        #incrementButton, #refreshButton, #homeButton {
+            background-color: #f00;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #incrementButton:hover, #refreshButton:hover, #homeButton:hover {
+            background-color: #900;
+        }
+
+        p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Clicks/Taps Per Second (CPS/TPS)</h1>
+    
+    <div id="counter">Click/Tap Counter: <span id="count">0</span></div>
+    <div id="cps">CPS/TPS: <span id="cpsValue">0</span></div>
+    <div id="rabbitStatus"></div>
+    <img id="rabbitImage" src="https://t4.ftcdn.net/jpg/02/65/44/89/360_F_265448993_7CYk6pnAdxpm19jfxXmPJQw34Ay0AYW7.jpg" alt="Rabbit Image">
+    <div id="turtleStatus"></div>
+    <img id="turtleImage" src="https://t3.ftcdn.net/jpg/00/15/27/80/360_F_15278087_eaWJ3iN16u4kyHccwYQc3uI7J70bQYIu.jpg" alt="Turtle Image">
+
+    <button id="incrementButton" onclick="handleButtonClick()">Click/Tap Here 10 Times</button>
+
+    <button id="refreshButton" onclick="refreshPage()">Restart</button>
+    <button id="homeButton" onclick="goHome()">Back to Home</button>
+
+    <script>
+        let count = 0;
+        let startTime;
+        let endTime;
+
+        function handleButtonClick() {
+            count++;
+            document.getElementById('count').innerText = count;
+
+            if (count === 1) {
+                startTime = new Date();
+            }
+
+            if (count === 10) {
+                endTime = new Date();
+                const elapsedTime = (endTime - startTime) / 1000;
+                const cps = (count / elapsedTime).toFixed(2);
+                document.getElementById('cpsValue').innerText = cps;
+
+                if (cps >= 7) {
+                    document.getElementById('rabbitStatus').innerText = "Rabbit Status: You are as fast as a rabbit!";
+                    document.getElementById('rabbitImage').style.display = 'block';
+                } else {
+                    document.getElementById('turtleStatus').innerText = "Turtle Status: You are as slow as a turtle!";
+                    document.getElementById('turtleImage').style.display = 'block';
+                }
+
+                document.getElementById('incrementButton').style.display = 'none';
+                alert(`It took ${elapsedTime} seconds to perform 10 clicks. CPS: ${cps}`);
+            }
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+        
+    </script>
+</body>
+</html>
