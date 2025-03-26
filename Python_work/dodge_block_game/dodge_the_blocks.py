@@ -14,34 +14,57 @@ BLOCK_SIZE = 50
 SPEED = 5
 BLOCK_SPEED = 5  # Initial block speed
 SPEED_INCREMENT = 1  # How much the block speed increases
-SCORE_THRESHOLD = 1000  # Increase speed and spawn more blocks every 1000 points
+SCORE_THRESHOLD = 1000  # Increase speed every 1000 points
 HIGH_SCORE_FILE = "high_score.txt"
+SETTINGS_FILE = "settings.txt"
 
-# Colors
+# Default colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 background_color = WHITE
 
+# Initialize default images
+default_player_img = pygame.Surface((PLAYER_SIZE, PLAYER_SIZE))
+default_player_img.fill(RED)
+default_block_img = pygame.Surface((BLOCK_SIZE, BLOCK_SIZE))
+default_block_img.fill(BLACK)
+
 # Load images
 def load_image(path, size):
-    img = pygame.image.load(path)
-    return pygame.transform.scale(img, size)
+    try:
+        img = pygame.image.load(path)
+        return pygame.transform.scale(img, size)
+    except (pygame.error, FileNotFoundError) as e:
+        print(f"Error loading image: {e}")
+        if size == (PLAYER_SIZE, PLAYER_SIZE):
+            return default_player_img
+        return default_block_img
 
 def load_settings():
     global player_img, block_img, background_color
-    if os.path.exists("settings.txt"):
-        with open("settings.txt", "r") as file:
-            lines = file.readlines()
-            player_path = lines[0].strip()
-            block_path = lines[1].strip()
-            color_values = tuple(map(int, lines[2].strip().split(',')))
-            background_color = color_values
-            player_img = load_image(player_path, (PLAYER_SIZE, PLAYER_SIZE))
-            block_img = load_image(block_path, (BLOCK_SIZE, BLOCK_SIZE))
-    else:
-        player_img = load_image(r"C:\Users\bolt\Pictures\ASCII Art\car.jpg", (PLAYER_SIZE, PLAYER_SIZE))
-        block_img = load_image(r"C:\Users\bolt\Pictures\Camera Roll\large_user_6750003_651.jpg", (BLOCK_SIZE, BLOCK_SIZE))
+    try:
+        if os.path.exists(SETTINGS_FILE):
+            with open(SETTINGS_FILE, "r") as file:
+                lines = [line.strip() for line in file.readlines()]
+                if len(lines) >= 3:
+                    player_path = lines[0] if lines[0] != "None" else None
+                    block_path = lines[1] if lines[1] != "None" else None
+                    try:
+                        color_values = tuple(map(int, lines[2].split(',')))
+                        background_color = color_values
+                    except (ValueError, IndexError):
+                        background_color = WHITE
+                    
+                    player_img = load_image(player_path, (PLAYER_SIZE, PLAYER_SIZE)) if player_path else default_player_img
+                    block_img = load_image(block_path, (BLOCK_SIZE, BLOCK_SIZE)) if block_path else default_block_img
+                else:
+                    raise ValueError("Settings file incomplete")
+    except Exception as e:
+        print(f"Error loading settings: {e}")
+        player_img = default_player_img
+        block_img = default_block_img
+        background_color = WHITE
 
 load_settings()
 
@@ -51,14 +74,21 @@ pygame.display.set_caption("Dodge the Blocks")
 
 # Load high score
 def load_high_score():
-    if os.path.exists(HIGH_SCORE_FILE):
-        with open(HIGH_SCORE_FILE, "r") as file:
-            return int(file.read().strip())
-    return 0
+    try:
+        if os.path.exists(HIGH_SCORE_FILE):
+            with open(HIGH_SCORE_FILE, "r") as file:
+                content = file.read().strip()
+                return int(content) if content else 0
+        return 0
+    except (FileNotFoundError, ValueError):
+        return 0
 
 def save_high_score(score):
     with open(HIGH_SCORE_FILE, "w") as file:
         file.write(str(score))
+
+# Initialize high score
+high_score = load_high_score()
 
 # Player setup
 player_x = WIDTH // 2 - PLAYER_SIZE // 2
@@ -66,6 +96,18 @@ player_y = HEIGHT - PLAYER_SIZE - 10
 
 # Blocks list
 blocks = []
+
+# Font setup
+font = pygame.font.Font(None, 36)
+
+def draw_text(text, x, y, color=BLACK, center=False):
+    text_surface = font.render(text, True, color)
+    text_rect = text_surface.get_rect()
+    if center:
+        text_rect.center = (x, y)
+    else:
+        text_rect.topleft = (x, y)
+    screen.blit(text_surface, text_rect)
 
 # Home screen
 def home_screen():
@@ -75,6 +117,7 @@ def home_screen():
         draw_text("Press P to Play", WIDTH // 2, HEIGHT // 2, BLACK, center=True)
         draw_text("Press S for Settings", WIDTH // 2, HEIGHT // 2 + 50, BLACK, center=True)
         pygame.display.flip()
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -88,11 +131,9 @@ def home_screen():
 # Settings screen
 def settings_screen():
     global player_img, block_img, background_color
-    root = tk.Tk()
-    root.withdraw()  # Hide the root window
-
+    
     while True:
-        screen.fill(WHITE)
+        screen.fill(background_color)
         draw_text("Settings", WIDTH // 2, HEIGHT // 4, BLACK, center=True)
         draw_text("Press 1 to Change Player Image", WIDTH // 2, HEIGHT // 2, BLACK, center=True)
         draw_text("Press 2 to Change Block Image", WIDTH // 2, HEIGHT // 2 + 50, BLACK, center=True)
@@ -108,55 +149,53 @@ def settings_screen():
                 if event.key == pygame.K_b:
                     return
                 if event.key == pygame.K_1:
-                    player_path = filedialog.askopenfilename(title="Select Player Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
+                    root = tk.Tk()
+                    root.withdraw()
+                    player_path = filedialog.askopenfilename(
+                        title="Select Player Image", 
+                        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
+                    )
+                    root.destroy()
                     if player_path:
                         player_img = load_image(player_path, (PLAYER_SIZE, PLAYER_SIZE))
                 if event.key == pygame.K_2:
-                    block_path = filedialog.askopenfilename(title="Select Block Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")])
+                    root = tk.Tk()
+                    root.withdraw()
+                    block_path = filedialog.askopenfilename(
+                        title="Select Block Image", 
+                        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
+                    )
+                    root.destroy()
                     if block_path:
                         block_img = load_image(block_path, (BLOCK_SIZE, BLOCK_SIZE))
                 if event.key == pygame.K_3:
-                    color = colorchooser.askcolor(title="Choose Background Color")[0]
-                    if color:
-                        background_color = tuple(map(int, color))
-                
-                with open("settings.txt", "w") as file:
-                    file.write(f"{player_img.get_at((0, 0))}\n")  # Save path or relevant data
-                    file.write(f"{block_img.get_at((0, 0))}\n")  # Save path or relevant data
-                    file.write(f"{','.join(map(str, background_color))}")
+                    root = tk.Tk()
+                    root.withdraw()
+                    color = colorchooser.askcolor(title="Choose Background Color")
+                    root.destroy()
+                    if color[0]:
+                        background_color = tuple(map(int, color[0]))
 
-    root.quit()
+        # Save settings
+        with open(SETTINGS_FILE, "w") as file:
+            file.write(f"{player_path if 'player_path' in locals() else 'None'}\n")
+            file.write(f"{block_path if 'block_path' in locals() else 'None'}\n")
+            file.write(f"{','.join(map(str, background_color))}\n")
 
 def reset_game():
-    global player_x, blocks, score, BLOCK_SPEED
+    global player_x, blocks, score, BLOCK_SPEED, high_score
     player_x = WIDTH // 2 - PLAYER_SIZE // 2
     blocks = []
+    if score > high_score:
+        high_score = score
+        save_high_score(high_score)
     score = 0
     BLOCK_SPEED = 5  # Reset speed to initial value
 
-def draw_text(text, x, y, color=BLACK, center=False):
-    text_surface = font.render(text, True, color)
-    text_rect = text_surface.get_rect()
-    if center:
-        text_rect.center = (x, y)
-    else:
-        text_rect.topleft = (x, y)
-    screen.blit(text_surface, text_rect)
-
-# Collision detection
-def check_collision():
-    global blocks
-    for block in blocks:
-        if (player_x < block[0] + BLOCK_SIZE and player_x + PLAYER_SIZE > block[0]) and (player_y < block[1] + BLOCK_SIZE and player_y + PLAYER_SIZE > block[1]):
-            return True  # Collision detected
-    return False
-
-# Main game loop
+# Main game variables
 running = True
 clock = pygame.time.Clock()
 score = 0
-high_score = load_high_score()
-font = pygame.font.Font(None, 36)
 
 home_screen()  # Show home screen before starting the game
 
@@ -167,6 +206,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                home_screen()
 
     # Player movement
     keys = pygame.key.get_pressed()
@@ -180,33 +222,37 @@ while running:
         block_x = random.randint(0, WIDTH - BLOCK_SIZE)
         blocks.append([block_x, 0])
 
-    for block in blocks:
+    for block in blocks[:]:
         block[1] += BLOCK_SPEED
         screen.blit(block_img, (block[0], block[1]))
+        
+        # Check for collisions
+        if (player_x < block[0] + BLOCK_SIZE and
+            player_x + PLAYER_SIZE > block[0] and
+            player_y < block[1] + BLOCK_SIZE and
+            player_y + PLAYER_SIZE > block[1]):
+            reset_game()
+            break
 
-    screen.blit(player_img, (player_x, player_y))
+    # Remove blocks that are off screen
     blocks = [block for block in blocks if block[1] < HEIGHT]
-
-    # Check collision with blocks
-    if check_collision():
-        high_score = max(high_score, score)  # Update high score if needed
-        save_high_score(high_score)
-        reset_game()
-        home_screen()  # Go back to home screen after dying
-
-    # Increase block spawn rate and speed every 1000 points
+    
+    # Draw player and update score
+    screen.blit(player_img, (player_x, player_y))
     score += 1
-    if score % SCORE_THRESHOLD == 0:
-        BLOCK_SPEED += SPEED_INCREMENT  # Increase block speed
-        # Increase the block spawn rate
-        for _ in range(2):  # Add two more blocks every 1000 points
-            block_x = random.randint(0, WIDTH - BLOCK_SIZE)
-            blocks.append([block_x, 0])
 
+    # Increase difficulty
+    if score % SCORE_THRESHOLD == 0:
+        BLOCK_SPEED += SPEED_INCREMENT
+
+    # Display scores
     draw_text(f"Score: {score}", 10, 10)
     draw_text(f"High Score: {high_score}", 10, 40)
 
     pygame.display.flip()
     clock.tick(60)
 
+# Save high score when quitting
+if score > high_score:
+    save_high_score(score)
 pygame.quit()
