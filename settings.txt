@@ -1,3 +1,3 @@
-C:/Users/bolt/Pictures/ASCII Art/dog.jpg
-C:/Users/bolt/Pictures/ASCII Art/images.jpg
-104,95,226
+None
+None
+160,160,160
