@@ -1,4 +1,4 @@
-player.png
+None
 block.png
 126,177,194
-mouse
+wasd
