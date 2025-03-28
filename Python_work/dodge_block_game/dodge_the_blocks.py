@@ -21,6 +21,7 @@ HIGH_SCORE_FILE = "high_score.txt"
 COINS_FILE = "coins.txt"
 SETTINGS_FILE = "settings.txt"
 UPGRADES_FILE = "upgrades.json"
+POWERUP_DURATION = 5000  # 5 seconds in milliseconds
 
 # Colors
 WHITE = (255, 255, 255)
@@ -32,6 +33,15 @@ DARK_GRAY = (80, 80, 80)
 GOLD = (255, 215, 0)
 GREEN = (0, 200, 0)
 BLUE = (0, 0, 200)
+PURPLE = (128, 0, 128)
+CYAN = (0, 255, 255)
+
+# Power-up types
+POWERUP_TYPES = {
+    "speed_boost": {"color": CYAN, "effect": "2x Speed", "weight": 1},
+    "coin_multiplier": {"color": GOLD, "effect": "2x Coins", "weight": 3},  # Most common
+    "invincibility": {"color": PURPLE, "effect": "Invincible", "weight": 0.5}  # Rarest
+}
 
 # Initialize default images
 default_player_img = pygame.Surface((PLAYER_SIZE, PLAYER_SIZE))
@@ -48,6 +58,8 @@ coins = 0.0  # Initialize as float to support decimal coins
 score = 0
 paused = False
 control_scheme = "arrows"  # Can be "arrows", "wasd", or "mouse"
+active_powerups = {}  # Dictionary to track active power-ups and their end times
+powerup_blocks = []  # List to track power-up blocks on screen
 
 # Upgrades system
 upgrades = {
@@ -217,9 +229,29 @@ def draw_coin_counter():
     coin_rect = coin_surface.get_rect(topright=(WIDTH - 10, 10))
     screen.blit(coin_surface, coin_rect)
 
+def draw_powerup_info():
+    current_time = pygame.time.get_ticks()
+    y_pos = 100
+    for powerup_type, end_time in list(active_powerups.items()):
+        if current_time < end_time:
+            # Calculate remaining time in seconds
+            remaining_time = (end_time - current_time) / 1000
+            powerup_text = f"{POWERUP_TYPES[powerup_type]['effect']}: {remaining_time:.1f}s"
+            powerup_surface = font.render(powerup_text, True, POWERUP_TYPES[powerup_type]['color'])
+            powerup_rect = powerup_surface.get_rect(topright=(WIDTH - 10, y_pos))
+            screen.blit(powerup_surface, powerup_rect)
+            y_pos += 40
+        else:
+            # Remove expired power-ups
+            del active_powerups[powerup_type]
+
 # Calculate game stats based on upgrades
 def get_player_speed():
-    return BASE_SPEED + (upgrades["player_speed"]["effect"][upgrades["player_speed"]["level"] - 1] if upgrades["player_speed"]["level"] > 0 else 0)
+    base_speed = BASE_SPEED + (upgrades["player_speed"]["effect"][upgrades["player_speed"]["level"] - 1] if upgrades["player_speed"]["level"] > 0 else 0)
+    # Apply speed boost if active
+    if "speed_boost" in active_powerups:
+        base_speed *= 2
+    return base_speed
 
 def get_block_speed():
     return BASE_BLOCK_SPEED + (upgrades["block_speed"]["effect"][upgrades["block_speed"]["level"] - 1] if upgrades["block_speed"]["level"] > 0 else 0)
@@ -228,7 +260,47 @@ def get_player_size():
     return PLAYER_SIZE + (upgrades["player_size"]["effect"][upgrades["player_size"]["level"] - 1] if upgrades["player_size"]["level"] > 0 else 0)
 
 def get_coin_multiplier():
-    return 1 + (upgrades["coin_multiplier"]["effect"][upgrades["coin_multiplier"]["level"] - 1] if upgrades["coin_multiplier"]["level"] > 0 else 0)
+    base_multiplier = 1 + (upgrades["coin_multiplier"]["effect"][upgrades["coin_multiplier"]["level"] - 1] if upgrades["coin_multiplier"]["level"] > 0 else 0)
+    # Apply coin multiplier if active
+    if "coin_multiplier" in active_powerups:
+        base_multiplier *= 2
+    return base_multiplier
+
+def activate_powerup(powerup_type):
+    current_time = pygame.time.get_ticks()
+    active_powerups[powerup_type] = current_time + POWERUP_DURATION
+    # Play a sound effect if you have one (would need to be implemented)
+
+def spawn_powerup():
+    # Spawn chance reduced to 1% (from original 3%)
+    if random.randint(1, 300) <= 3:  # Now ~1% chance per frame
+        # Create weighted list for power-up selection
+        weighted_choices = []
+        for powerup_type, data in POWERUP_TYPES.items():
+            weighted_choices.extend([powerup_type] * int(data["weight"] * 10))
+        
+        # Select power-up type based on weights
+        powerup_type = random.choice(weighted_choices)
+        powerup_x = random.randint(0, WIDTH - BLOCK_SIZE)
+        powerup_blocks.append({
+            "x": powerup_x,
+            "y": 0,
+            "type": powerup_type,
+            "color": POWERUP_TYPES[powerup_type]["color"]
+        })
+
+def check_powerup_collision(player_x, player_y, player_size):
+    current_time = pygame.time.get_ticks()
+    for powerup in powerup_blocks[:]:
+        # Check collision with player
+        if (player_x < powerup["x"] + BLOCK_SIZE and
+            player_x + player_size > powerup["x"] and
+            player_y < powerup["y"] + BLOCK_SIZE and
+            player_y + player_size > powerup["y"]):
+            activate_powerup(powerup["type"])
+            powerup_blocks.remove(powerup)
+            return True
+    return False
 
 # Settings screen
 def settings_screen():
@@ -440,7 +512,7 @@ def home_screen():
                 upgrades_menu()
 
 def reset_game():
-    global player_x, blocks, score, BLOCK_SPEED, high_score, coins
+    global player_x, blocks, score, BLOCK_SPEED, high_score, coins, powerup_blocks, active_powerups
     
     # Calculate coins earned with multiplier
     base_coins = score // 100
@@ -454,6 +526,8 @@ def reset_game():
     
     player_x = WIDTH // 2 - get_player_size() // 2
     blocks = []
+    powerup_blocks = []
+    active_powerups = {}
     score = 0
     BLOCK_SPEED = get_block_speed()
     return round(coins_earned, 1)  # Return coins earned rounded to 1 decimal
@@ -464,10 +538,13 @@ def show_countdown():
         screen.fill(background_color)
         for block in blocks:
             screen.blit(block_img, (block[0], block[1]))
+        for powerup in powerup_blocks:
+            pygame.draw.rect(screen, powerup["color"], (powerup["x"], powerup["y"], BLOCK_SIZE, BLOCK_SIZE))
         screen.blit(pygame.transform.scale(player_img, (player_size, player_size)), (player_x, HEIGHT - player_size - 10))
         draw_text(f"Score: {score}", 10, 40)
         draw_text(f"High Score: {high_score}", 10, 70)
         draw_coin_counter()
+        draw_powerup_info()
         screen.blit(pause_overlay, (0, 0))
         draw_text(str(i), WIDTH // 2, HEIGHT // 2, BLACK, center=True, font_type=large_font)
         pygame.display.flip()
@@ -476,10 +553,13 @@ def show_countdown():
     screen.fill(background_color)
     for block in blocks:
         screen.blit(block_img, (block[0], block[1]))
+    for powerup in powerup_blocks:
+        pygame.draw.rect(screen, powerup["color"], (powerup["x"], powerup["y"], BLOCK_SIZE, BLOCK_SIZE))
     screen.blit(pygame.transform.scale(player_img, (player_size, player_size)), (player_x, HEIGHT - player_size - 10))
     draw_text(f"Score: {score}", 10, 40)
     draw_text(f"High Score: {high_score}", 10, 70)
     draw_coin_counter()
+    draw_powerup_info()
     screen.blit(pause_overlay, (0, 0))
     draw_text("GO!", WIDTH // 2, HEIGHT // 2, BLACK, center=True, font_type=large_font)
     pygame.display.flip()
@@ -504,11 +584,14 @@ def show_game_over(player_x, player_y, blocks, score, high_score):
         screen.fill(background_color)
         for block in blocks:
             screen.blit(block_img, (block[0], block[1]))
+        for powerup in powerup_blocks:
+            pygame.draw.rect(screen, powerup["color"], (powerup["x"], powerup["y"], BLOCK_SIZE, BLOCK_SIZE))
         player_size = get_player_size()
         screen.blit(pygame.transform.scale(player_img, (player_size, player_size)), (player_x, player_y))
         draw_text(f"Score: {score}", 10, 40)
         draw_text(f"High Score: {high_score}", 10, 70)
         draw_coin_counter()
+        draw_powerup_info()
         
         alpha = min(alpha + fade_speed, 180)
         game_over_overlay.fill((0, 0, 0, alpha))
@@ -541,11 +624,14 @@ def show_game_over(player_x, player_y, blocks, score, high_score):
         screen.fill(background_color)
         for block in blocks:
             screen.blit(block_img, (block[0], block[1]))
+        for powerup in powerup_blocks:
+            pygame.draw.rect(screen, powerup["color"], (powerup["x"], powerup["y"], BLOCK_SIZE, BLOCK_SIZE))
         player_size = get_player_size()
         screen.blit(pygame.transform.scale(player_img, (player_size, player_size)), (player_x, player_y))
         draw_text(f"Score: {score}", 10, 40)
         draw_text(f"High Score: {high_score}", 10, 70)
         draw_coin_counter()
+        draw_powerup_info()
         screen.blit(game_over_overlay, (0, 0))
         draw_text("GAME OVER", WIDTH // 2, HEIGHT // 2 - 60, WHITE, center=True, font_type=large_font)
         draw_text(f"Score: {score}", WIDTH // 2, HEIGHT // 2, WHITE, center=True)
@@ -559,12 +645,14 @@ def show_game_over(player_x, player_y, blocks, score, high_score):
 
 # Main game loop
 def game_loop():
-    global player_x, player_y, blocks, score, BLOCK_SPEED, high_score, coins, paused
+    global player_x, player_y, blocks, score, BLOCK_SPEED, high_score, coins, paused, powerup_blocks
     
     player_size = get_player_size()
     player_x = WIDTH // 2 - player_size // 2
     player_y = HEIGHT - player_size - 10
     blocks = []
+    powerup_blocks = []
+    active_powerups.clear()
     score = 0
     BLOCK_SPEED = get_block_speed()
     player_speed = get_player_speed()
@@ -606,8 +694,13 @@ def game_loop():
                     if keys[pygame.K_d] and player_x < WIDTH - player_size:
                         player_x += player_speed
 
+        # Draw blocks
         for block in blocks:
             screen.blit(block_img, (block[0], block[1]))
+        
+        # Draw power-ups
+        for powerup in powerup_blocks:
+            pygame.draw.rect(screen, powerup["color"], (powerup["x"], powerup["y"], BLOCK_SIZE, BLOCK_SIZE))
         
         # Draw player with current size
         current_player_img = pygame.transform.scale(player_img, (player_size, player_size))
@@ -640,32 +733,52 @@ def game_loop():
             pygame.display.flip()
             continue
 
+        # Spawn regular blocks
         if random.randint(1, 30) == 1:
             block_x = random.randint(0, WIDTH - BLOCK_SIZE)
             blocks.append([block_x, 0])
+        
+        # Spawn power-up blocks
+        spawn_powerup()
 
+        # Update blocks
         for block in blocks[:]:
             block[1] += BLOCK_SPEED
             
+            # Check collision with player (only if not invincible)
             if (player_x < block[0] + BLOCK_SIZE and
                 player_x + player_size > block[0] and
                 player_y < block[1] + BLOCK_SIZE and
                 player_y + player_size > block[1]):
-                action = show_game_over(player_x, player_y, blocks, score, high_score)
-                if action == "retry":
-                    # Reset game state for new attempt
-                    player_size = get_player_size()
-                    player_x = WIDTH // 2 - player_size // 2
-                    player_y = HEIGHT - player_size - 10
-                    blocks = []
-                    score = 0
-                    BLOCK_SPEED = get_block_speed()
-                    player_speed = get_player_speed()
-                    paused = False
-                    continue
-                elif action == "home":
-                    return True
+                if "invincibility" not in active_powerups:
+                    action = show_game_over(player_x, player_y, blocks, score, high_score)
+                    if action == "retry":
+                        # Reset game state for new attempt
+                        player_size = get_player_size()
+                        player_x = WIDTH // 2 - player_size // 2
+                        player_y = HEIGHT - player_size - 10
+                        blocks = []
+                        powerup_blocks = []
+                        active_powerups.clear()
+                        score = 0
+                        BLOCK_SPEED = get_block_speed()
+                        player_speed = get_player_speed()
+                        paused = False
+                        continue
+                    elif action == "home":
+                        return True
 
+        # Update power-ups
+        for powerup in powerup_blocks[:]:
+            powerup["y"] += BLOCK_SPEED
+            # Remove if off screen
+            if powerup["y"] > HEIGHT:
+                powerup_blocks.remove(powerup)
+        
+        # Check power-up collisions
+        check_powerup_collision(player_x, player_y, player_size)
+
+        # Remove blocks that are off screen
         blocks = [block for block in blocks if block[1] < HEIGHT]
         
         score += 1
@@ -675,6 +788,7 @@ def game_loop():
         draw_text(f"Score: {score}", 10, 40)
         draw_text(f"High Score: {high_score}", 10, 70)
         draw_coin_counter()
+        draw_powerup_info()
 
         pygame.display.flip()
         clock.tick(60)
