@@ -44,9 +44,10 @@ player_img = default_player_img
 block_img = default_block_img
 background_color = WHITE
 high_score = 0
-coins = 0  # Initialize coins here
+coins = 0.0  # Initialize as float to support decimal coins
 score = 0
 paused = False
+control_scheme = "arrows"  # Can be "arrows", "wasd", or "mouse"
 
 # Upgrades system
 upgrades = {
@@ -69,17 +70,14 @@ def load_image(path, size):
 
 # Load all game data
 def load_data():
-    global player_img, block_img, background_color, high_score, coins, upgrades
-    
-    # Initialize coins with default value
-    coins = 0
+    global player_img, block_img, background_color, high_score, coins, upgrades, control_scheme
     
     # Load settings
     try:
         if os.path.exists(SETTINGS_FILE):
             with open(SETTINGS_FILE, "r") as file:
                 lines = [line.strip() for line in file.readlines()]
-                if len(lines) >= 3:
+                if len(lines) >= 4:
                     player_path = lines[0] if lines[0] != "None" else None
                     block_path = lines[1] if lines[1] != "None" else None
                     try:
@@ -87,6 +85,7 @@ def load_data():
                         background_color = color_values
                     except (ValueError, IndexError):
                         background_color = WHITE
+                    control_scheme = lines[3] if len(lines) > 3 and lines[3] in ["arrows", "wasd", "mouse"] else "arrows"
                     
                     player_img = load_image(player_path, (PLAYER_SIZE, PLAYER_SIZE)) if player_path else default_player_img
                     block_img = load_image(block_path, (BLOCK_SIZE, BLOCK_SIZE)) if block_path else default_block_img
@@ -107,9 +106,9 @@ def load_data():
         if os.path.exists(COINS_FILE):
             with open(COINS_FILE, "r") as file:
                 content = file.read().strip()
-                coins = int(content) if content else 0
+                coins = float(content) if content else 0.0
     except (FileNotFoundError, ValueError, PermissionError):
-        coins = 0
+        coins = 0.0
 
     # Load upgrades
     try:
@@ -186,6 +185,18 @@ def save_upgrades():
     except Exception as e:
         print(f"Error saving upgrades: {e}")
 
+def save_settings():
+    try:
+        with open(SETTINGS_FILE, "w") as file:
+            player_path = "None" if player_img == default_player_img else "player.png"
+            block_path = "None" if block_img == default_block_img else "block.png"
+            file.write(f"{player_path}\n")
+            file.write(f"{block_path}\n")
+            file.write(f"{','.join(map(str, background_color))}\n")
+            file.write(f"{control_scheme}\n")
+    except Exception as e:
+        print(f"Error saving settings: {e}")
+
 # Font setup
 font = pygame.font.Font(None, 36)
 large_font = pygame.font.Font(None, 72)
@@ -201,7 +212,7 @@ def draw_text(text, x, y, color=BLACK, center=False, font_type=font):
     screen.blit(text_surface, text_rect)
 
 def draw_coin_counter():
-    coin_text = f"Coins: {coins}"
+    coin_text = f"Coins: {round(coins, 1)}"  # Display with 1 decimal place
     coin_surface = font.render(coin_text, True, GOLD)
     coin_rect = coin_surface.get_rect(topright=(WIDTH - 10, 10))
     screen.blit(coin_surface, coin_rect)
@@ -221,22 +232,49 @@ def get_coin_multiplier():
 
 # Settings screen
 def settings_screen():
-    global player_img, block_img, background_color, coins
+    global player_img, block_img, background_color, coins, control_scheme
     
-    back_button = Button(WIDTH//2 - 100, HEIGHT//2 + 150, 200, 50, "Back")
-    player_path = None
-    block_path = None
+    back_button = Button(WIDTH//2 - 100, HEIGHT - 80, 200, 50, "Back")
+    arrows_button = Button(WIDTH//2 - 100, HEIGHT//2 + 50, 200, 40, "Arrow Keys", 
+                         color=GREEN if control_scheme == "arrows" else LIGHT_GRAY)
+    wasd_button = Button(WIDTH//2 - 100, HEIGHT//2 + 100, 200, 40, "WASD Keys",
+                        color=GREEN if control_scheme == "wasd" else LIGHT_GRAY)
+    mouse_button = Button(WIDTH//2 - 100, HEIGHT//2 + 150, 200, 40, "Mouse Control",
+                         color=GREEN if control_scheme == "mouse" else LIGHT_GRAY)
+    player_img_button = Button(WIDTH//2 - 100, HEIGHT//2 - 90, 200, 40, "Player Image")
+    block_img_button = Button(WIDTH//2 - 100, HEIGHT//2 - 40, 200, 40, "Block Image")
+    bg_color_button = Button(WIDTH//2 - 100, HEIGHT//2 + 10, 200, 40, "Background Color")
     
     while True:
         mouse_pos = pygame.mouse.get_pos()
         screen.fill(background_color)
-        draw_text("Settings", WIDTH // 2, HEIGHT // 4, BLACK, center=True)
+        draw_text("Settings", WIDTH // 2, 50, BLACK, center=True, font_type=large_font)
         
-        draw_text("Player Image: Press 1", WIDTH // 2, HEIGHT // 2, BLACK, center=True)
-        draw_text("Block Image: Press 2", WIDTH // 2, HEIGHT // 2 + 50, BLACK, center=True)
-        draw_text("Background Color: Press 3", WIDTH // 2, HEIGHT // 2 + 100, BLACK, center=True)
+        # Update button colors
+        arrows_button.color = GREEN if control_scheme == "arrows" else LIGHT_GRAY
+        wasd_button.color = GREEN if control_scheme == "wasd" else LIGHT_GRAY
+        mouse_button.color = GREEN if control_scheme == "mouse" else LIGHT_GRAY
         
+        # Check hover states
+        arrows_button.check_hover(mouse_pos)
+        wasd_button.check_hover(mouse_pos)
+        mouse_button.check_hover(mouse_pos)
+        player_img_button.check_hover(mouse_pos)
+        block_img_button.check_hover(mouse_pos)
+        bg_color_button.check_hover(mouse_pos)
         back_button.check_hover(mouse_pos)
+        
+        # Draw buttons
+        draw_text("Control Scheme:", WIDTH // 2, HEIGHT//2 + 20, BLACK, center=True)
+        arrows_button.draw(screen)
+        wasd_button.draw(screen)
+        mouse_button.draw(screen)
+        
+        draw_text("Customization:", WIDTH // 2, HEIGHT//2 - 120, BLACK, center=True)
+        player_img_button.draw(screen)
+        block_img_button.draw(screen)
+        bg_color_button.draw(screen)
+        
         back_button.draw(screen)
         draw_coin_counter()
         
@@ -248,41 +286,45 @@ def settings_screen():
                 exit()
             
             if back_button.is_clicked(mouse_pos, event):
+                save_settings()
                 return
             
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
-                    root = tk.Tk()
-                    root.withdraw()
-                    player_path = filedialog.askopenfilename(
-                        title="Select Player Image", 
-                        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
-                    )
-                    root.destroy()
-                    if player_path:
-                        player_img = load_image(player_path, (PLAYER_SIZE, PLAYER_SIZE))
-                if event.key == pygame.K_2:
-                    root = tk.Tk()
-                    root.withdraw()
-                    block_path = filedialog.askopenfilename(
-                        title="Select Block Image", 
-                        filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
-                    )
-                    root.destroy()
-                    if block_path:
-                        block_img = load_image(block_path, (BLOCK_SIZE, BLOCK_SIZE))
-                if event.key == pygame.K_3:
-                    root = tk.Tk()
-                    root.withdraw()
-                    color = colorchooser.askcolor(title="Choose Background Color")
-                    root.destroy()
-                    if color[0]:
-                        background_color = tuple(map(int, color[0]))
-
-        with open(SETTINGS_FILE, "w") as file:
-            file.write(f"{player_path if 'player_path' in locals() and player_path else 'None'}\n")
-            file.write(f"{block_path if 'block_path' in locals() and block_path else 'None'}\n")
-            file.write(f"{','.join(map(str, background_color))}\n")
+            if arrows_button.is_clicked(mouse_pos, event):
+                control_scheme = "arrows"
+            if wasd_button.is_clicked(mouse_pos, event):
+                control_scheme = "wasd"
+            if mouse_button.is_clicked(mouse_pos, event):
+                control_scheme = "mouse"
+            
+            if player_img_button.is_clicked(mouse_pos, event):
+                root = tk.Tk()
+                root.withdraw()
+                player_path = filedialog.askopenfilename(
+                    title="Select Player Image", 
+                    filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
+                )
+                root.destroy()
+                if player_path:
+                    player_img = load_image(player_path, (PLAYER_SIZE, PLAYER_SIZE))
+            
+            if block_img_button.is_clicked(mouse_pos, event):
+                root = tk.Tk()
+                root.withdraw()
+                block_path = filedialog.askopenfilename(
+                    title="Select Block Image", 
+                    filetypes=[("Image Files", "*.png;*.jpg;*.jpeg")]
+                )
+                root.destroy()
+                if block_path:
+                    block_img = load_image(block_path, (BLOCK_SIZE, BLOCK_SIZE))
+            
+            if bg_color_button.is_clicked(mouse_pos, event):
+                root = tk.Tk()
+                root.withdraw()
+                color = colorchooser.askcolor(title="Choose Background Color")
+                root.destroy()
+                if color[0]:
+                    background_color = tuple(map(int, color[0]))
 
 # Upgrade menu
 def upgrades_menu():
@@ -414,7 +456,7 @@ def reset_game():
     blocks = []
     score = 0
     BLOCK_SPEED = get_block_speed()
-    return int(coins_earned)
+    return round(coins_earned, 1)  # Return coins earned rounded to 1 decimal
 
 def show_countdown():
     player_size = get_player_size()
@@ -541,6 +583,29 @@ def game_loop():
                     if not paused:
                         show_countdown()
 
+        # Handle player movement based on control scheme
+        if not paused:
+            if control_scheme == "mouse":
+                # Mouse control - player follows mouse X position
+                if pygame.mouse.get_focused():  # Only move if mouse is in window
+                    mouse_x, _ = pygame.mouse.get_pos()
+                    player_x = mouse_x - player_size // 2
+                    # Keep player within bounds
+                    player_x = max(0, min(WIDTH - player_size, player_x))
+            else:
+                # Keyboard controls
+                keys = pygame.key.get_pressed()
+                if control_scheme == "arrows":
+                    if keys[pygame.K_LEFT] and player_x > 0:
+                        player_x -= player_speed
+                    if keys[pygame.K_RIGHT] and player_x < WIDTH - player_size:
+                        player_x += player_speed
+                elif control_scheme == "wasd":
+                    if keys[pygame.K_a] and player_x > 0:
+                        player_x -= player_speed
+                    if keys[pygame.K_d] and player_x < WIDTH - player_size:
+                        player_x += player_speed
+
         for block in blocks:
             screen.blit(block_img, (block[0], block[1]))
         
@@ -574,12 +639,6 @@ def game_loop():
             
             pygame.display.flip()
             continue
-
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_LEFT] and player_x > 0:
-            player_x -= player_speed
-        if keys[pygame.K_RIGHT] and player_x < WIDTH - player_size:
-            player_x += player_speed
 
         if random.randint(1, 30) == 1:
             block_x = random.randint(0, WIDTH - BLOCK_SIZE)
