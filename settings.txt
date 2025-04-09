@@ -1,4 +1,4 @@
-player.png
-block.png
+None
+/Users/nposavec/Desktop/Personal/block.png
 66,80,255
 mouse

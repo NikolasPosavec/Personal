@@ -1,20 +1,34 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import ScalarFormatter
 
 def generate_scatter_plot(x, y, title='Scatter Plot', xlabel='X-axis', ylabel='Y-axis', best_fit=False):
     plt.figure(figsize=(8, 6))
     plt.scatter(x, y, c='blue', alpha=0.6, edgecolors='black')
     
+    # Apply scientific notation to axes
+    plt.gca().xaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    plt.gca().yaxis.set_major_formatter(ScalarFormatter(useMathText=True))
+    plt.ticklabel_format(style='sci', axis='both', scilimits=(0,0))
+    
     if best_fit:
         m, b = np.polyfit(x, y, 1)
-        plt.plot(x, m*np.array(x) + b, color='red', linestyle='--', label=f'Best Fit Line: y = {m:.5f}x + {b:.5f}')
+        # Format coefficients in scientific notation
+        m_str = "{:.3e}".format(m)
+        b_str = "{:.3e}".format(b)
+        plt.plot(x, m*np.array(x) + b, color='red', linestyle='--', 
+                label=f'Best Fit Line: y = {m_str}x + {b_str}')
         plt.legend()
-        plt.text(min(x), max(y) - (max(y) - min(y)) * 0.1, f'y = {m:.5f}x + {b:.5f}', fontsize=12, color='red', verticalalignment='top', bbox=dict(facecolor='white', alpha=0.5))
+        plt.text(min(x), max(y) - (max(y) - min(y)) * 0.1, 
+                f'y = {m_str}x + {b_str}', 
+                fontsize=12, color='red', verticalalignment='top', 
+                bbox=dict(facecolor='white', alpha=0.5))
     
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(True, linestyle='--', alpha=0.6)
+    plt.tight_layout()  # Adjust layout to prevent label cutoff
     plt.show()
 
 def main():
@@ -28,8 +42,9 @@ def main():
             return
     elif choice == 'random':
         n = int(input("Enter the number of points: "))
-        x = np.random.rand(n) * 100
-        y = np.random.rand(n) * 100
+        scale = float(input("Enter the maximum value for random numbers (e.g., 1e6): ") or "100")
+        x = np.random.rand(n) * scale
+        y = np.random.rand(n) * scale
     else:
         print("Invalid choice. Please enter 'manual' or 'random'.")
         return
@@ -43,3 +58,13 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+## paste these lines to run the code (take out comments):
+
+#python3 -m venv venv
+
+#source venv/bin/activate
+
+#pip install matplotlib
+
+#python3 scatter_plot_maker.py
