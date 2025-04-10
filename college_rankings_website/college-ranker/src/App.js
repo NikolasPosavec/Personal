@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext'; // Added useAuth here
 import { Container } from '@mui/material';
 import Navbar from './components/Navbar';
 import CollegeRanker from './components/CollegeRanker';
@@ -29,9 +29,10 @@ function App() {
   );
 }
 
-const PrivateRoute = ({ children }) => {
+// Move PrivateRoute component outside of App to avoid hook call order issues
+function PrivateRoute({ children }) {
   const { currentUser } = useAuth();
   return currentUser ? children : <Navigate to="/login" />;
-};
+}
 
 export default App;
