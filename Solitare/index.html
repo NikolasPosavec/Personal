@@ -307,6 +307,26 @@
                 draggedFrom: null,
                 lastMove: null
             };
+            document.addEventListener('dragover', (e) => {
+            e.preventDefault(); // Necessary to allow dropping
+        });
+
+        document.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!state.draggedCards) return;
+            
+            const dropTarget = e.target.closest('.pile');
+            if (!dropTarget) return;
+            
+            const pileType = dropTarget.id.split('-')[0];
+            const pileIndex = parseInt(dropTarget.id.split('-')[1]);
+            
+            if (pileType === 'foundation') {
+                dropOnFoundation(e, pileIndex);
+            } else if (pileType === 'tableau') {
+                dropOnTableau(e, pileIndex);
+            }
+        });
 
             // DOM elements
             const elements = {
@@ -507,28 +527,29 @@
 
             // Start dragging cards
             function startDrag(e) {
-                const cardElement = e.target.closest('.card');
-                if (!cardElement) return;
+            e.preventDefault();
+            const cardElement = e.target.closest('.card');
+            if (!cardElement) return;
 
-                const cardId = cardElement.dataset.id;
-                const pileIndex = Array.from(elements.tableauPiles).indexOf(cardElement.parentElement);
+            const cardId = cardElement.dataset.id;
+            const pileIndex = Array.from(elements.tableauPiles).indexOf(cardElement.parentElement);
+            
+            // Find all cards from the clicked card to the top of the pile
+            const pile = state.tableau[pileIndex];
+            const cardIndex = pile.findIndex(card => card.id === cardId);
+            
+            if (cardIndex !== -1 && pile[cardIndex].faceUp) {
+                state.draggedCards = pile.slice(cardIndex);
+                state.draggedFrom = { type: 'tableau', index: pileIndex, cardIndex };
                 
-                // Find all cards from the clicked card to the top of the pile
-                const pile = state.tableau[pileIndex];
-                const cardIndex = pile.findIndex(card => card.id === cardId);
+                // Set data for drag and drop
+                e.dataTransfer.setData('text/plain', cardId);
+                e.dataTransfer.effectAllowed = 'move';
                 
-                if (cardIndex !== -1 && pile[cardIndex].faceUp) {
-                    state.draggedCards = pile.slice(cardIndex);
-                    state.draggedFrom = { type: 'tableau', index: pileIndex, cardIndex };
-                    
-                    // Set drag image
-                    e.dataTransfer.setData('text/plain', cardId);
-                    e.dataTransfer.effectAllowed = 'move';
-                    
-                    // Highlight valid drop targets
-                    highlightValidDrops();
-                }
+                // Highlight valid drop targets
+                highlightValidDrops();
             }
+        }
 
             // Highlight valid drop targets
             function highlightValidDrops() {
