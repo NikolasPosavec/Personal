@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Neon Solitaire</title>
+    <title>Nick's Solitaire</title>
     <style>
         :root {
             --primary: #6c5ce7;
@@ -251,7 +251,7 @@
 </head>
 <body>
     <header>
-        <h1>Neon Solitaire</h1>
+        <h1>Nick's Solitaire</h1>
         <div class="controls">
             <button id="new-game">New Game</button>
             <button id="hint">Hint</button>
@@ -494,16 +494,18 @@
 
             // Create a card DOM element
             function createCardElement(card) {
-                const cardElement = document.createElement('div');
-                cardElement.className = `card ${card.color}`;
-                cardElement.textContent = `${card.value}${card.suit}`;
-                cardElement.dataset.id = card.id;
-                cardElement.dataset.value = card.value;
-                cardElement.dataset.suit = card.suit;
-                cardElement.dataset.color = card.color;
-                cardElement.dataset.faceUp = card.faceUp;
-                return cardElement;
-            }
+    const cardElement = document.createElement('div');
+    cardElement.className = `card ${card.color}`;
+    cardElement.textContent = `${card.value}${card.suit}`;
+    cardElement.dataset.id = card.id;
+    cardElement.dataset.value = card.value;
+    cardElement.dataset.suit = card.suit;
+    cardElement.dataset.color = card.color;
+    cardElement.dataset.faceUp = card.faceUp;
+    cardElement.draggable = true;
+    cardElement.addEventListener('dragstart', startDrag);
+    return cardElement;
+}
 
             // Set up drop zones for cards
             function setupDropZones() {
